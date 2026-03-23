@@ -1,20 +1,23 @@
 import os
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_file
 import pandas as pd
 
 app = Flask(__name__)
 
 # Configuració dels arxius Excel
-# Nota: Si fas servir Volums a Railway, hauries d'afegir 'data/' davant del nom
 EXCEL_DATOS = "base_dades_formulari.xlsx"
-DIRECTORI_DADES = "app/data"
-if not os.path.exists(DIRECTORI_DADES):
-    os.makedirs(DIRECTORI_DADES)
 
-EXCEL_RESPOSTES = os.path.join(DIRECTORI_DADES, "respostes_formulari.xlsx"
+# RUTA DEL VOLUM (Corregida amb la barra inicial /)
+DIRECTORI_DADES = "/app/data"
+
+# Creem la carpeta si no existeix (necessari perquè funcioni el volum)
+if not os.path.exists(DIRECTORI_DADES):
+    os.makedirs(DIRECTORI_DADES, exist_ok=True)
+
+# Arxiu de respostes (Afegit el parèntesi que faltava)
+EXCEL_RESPOSTES = os.path.join(DIRECTORI_DADES, "respostes_formulari.xlsx")
 
 def carregar_dades():
-    # Carreguem cada full segons les teves especificacions
     try:
         comercials = pd.read_excel(EXCEL_DATOS, sheet_name='llistat_comercials').to_dict(orient='records')
         centres = pd.read_excel(EXCEL_DATOS, sheet_name='llistat_centres').to_dict(orient='records')
@@ -36,22 +39,28 @@ def formulari():
 
 @app.route('/enviar', methods=['POST'])
 def enviar():
-    dades = request.form.to_dict()
-    df_nova = pd.DataFrame([dades])
-    
-    # Guardar en Excel local
-    if os.path.exists(EXCEL_RESPOSTES):
-        df_existent = pd.read_excel(EXCEL_RESPOSTES)
-        df_final = pd.concat([df_existent, df_nova], ignore_index=True)
-    else:
-        df_final = df_nova
+    try:
+        dades = request.form.to_dict()
+        df_nova = pd.DataFrame([dades])
         
-    df_final.to_excel(EXCEL_RESPOSTES, index=False)
-    return "Dades guardades correctament a l'Excel local."
+        if os.path.exists(EXCEL_RESPOSTES):
+            df_existent = pd.read_excel(EXCEL_RESPOSTES)
+            df_final = pd.concat([df_existent, df_nova], ignore_index=True)
+        else:
+            df_final = df_nova
+            
+        df_final.to_excel(EXCEL_RESPOSTES, index=False)
+        return "Dades guardades correctament al Volum de Railway!"
+    except Exception as e:
+        return f"Error en guardar les dades: {e}"
 
-# --- CANVI CRUCIAL PER A RAILWAY ---
+# RUTA EXTRA: Per descarregar l'Excel fàcilment
+@app.route('/descarregar')
+def descarregar():
+    if os.path.exists(EXCEL_RESPOSTES):
+        return send_file(EXCEL_RESPOSTES, as_attachment=True)
+    return "Encara no hi ha cap resposta guardada."
+
 if __name__ == '__main__':
-    # Railway assigna un port dinàmic a través de la variable d'entorn PORT
     port = int(os.environ.get('PORT', 5000))
-    # Hem de posar host='0.0.0.0' per permetre connexions externes
     app.run(host='0.0.0.0', port=port)
