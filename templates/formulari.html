@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulari Activitats Autors</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .container { max-width: 800px; margin-top: 30px; margin-bottom: 50px; }
+        .section-title { border-bottom: 2px solid #0d6efd; padding-bottom: 10px; margin-top: 30px; margin-bottom: 20px; color: #0d6efd; }
+        .readonly-field { background-color: #e9ecef !important; }
+    </style>
+</head>
+
+<body>
+
+<div class="container bg-white shadow p-5 rounded">
+    <h2 class="text-center mb-4">Formulari d’Activitats d’Autors</h2>
+    <p class="text-muted text-center">Bromera / Algar / Animallibres</p>
+
+    <form action="{{ url_for('enviar') }}" method="POST">
+        
+        <h4 class="section-title">Informació General</h4>
+        
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Comercial *</label>
+                <select class="form-select" name="comercial" id="comercial" required onchange="carregarTipus()">
+                    <option value="">Selecciona...</option> {% for c in comercials %}
+                    <option value="{{c.comercial}}" data-zona="{{c.zona_influencia}}">{{c.comercial}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Zona d’influència</label>
+                <input type="text" class="form-control readonly-field" id="zona" name="zona" readonly>
+            </div>
+
+            <div class="col-md-12">
+                <label class="form-label">Nom del Centre</label>
+                <select class="form-select" id="centre" name="centre" onchange="carregarCentre()">
+                    <option value="">Selecciona...</option> {% for c in centres %}
+                    <option value="{{c.nom_centre}}" data-adreca="{{c.adreça}}" data-localitat="{{c.localitat}}">
+                        {{c.nom_centre}}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Adreça centre</label>
+                <input type="text" class="form-control readonly-field" id="adreca" name="adreca" readonly>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Localitat</label>
+                <input type="text" class="form-control readonly-field" id="localitat" name="localitat" readonly>
+            </div>
+
+            <div class="col-md-12">
+                <label class="form-label">Persona de contacte *</label>
+                <input type="text" class="form-control" name="contacte" required>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Telèfon de contacte * (només números)</label>
+                <input type="text" class="form-control" name="telefon" oninput="this.value = this.value.replace(/[^0-9]/g, '');" required>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Correu electrònic de contacte *</label>
+                <input type="email" class="form-control" name="correu_contacte" required>
+            </div>
+
+            <div class="col-md-12">
+                <label class="form-label">Segell *</label>
+                <select class="form-select" name="segell" required>
+                    <option value="">Selecciona...</option> 
+                    <option value="BROMERA">BROMERA</option>
+                    <option value="ALGAR">ALGAR</option>
+                    <option value="ANIMALLIBRES">ANIMALLIBRES</option>
+                </select>
+            </div>
+
+            <div class="col-md-12">
+                <label class="form-label">Tipus d’Animació</label>
+                <select class="form-select" id="tipus" name="tipus_animacio">
+                    <option value="">Selecciona comercial primer...</option>
+                    {% for a in animacions %}
+                    <option value="{{a.tipus_animacio}}" data-zona="{{a.zona_influencia}}">{{a.tipus_animacio}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-12">
+                <label class="form-label">Títol lectura animació</label>
+                <select class="form-select" id="llibre" name="titol" onchange="carregarLlibre()">
+                    <option value="">Selecciona...</option>
+                    {% for l in llibres %}
+                    <option value="{{l.titol}}" data-autor="{{l.author}}" data-correu="{{l.correu_autor}}">
+                        {{l.titol}}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Autor / animador</label>
+                <input type="text" class="form-control readonly-field" id="autor" name="autor" readonly>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Correu electrònic autor</label>
+                <input type="text" class="form-control readonly-field" id="correu_autor" name="correu_autor" readonly>
+            </div>
+        </div>
+
+        <h4 class="section-title">Detall de l’activitat</h4>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Nombre de sessions</label>
+                <select class="form-select" name="sessions">
+                    <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Nombre d'alumnes (aprox)</label>
+                <input type="text" class="form-control" name="alumnes" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+            </div>
+            <div class="col-md-12">
+                <label class="form-label">Cicle on es farà l’activitat (multi-selecció)</label>
+                <div class="row px-3">
+                    <div class="form-check col-md-6"><input class="form-check-input" type="checkbox" name="cicle" value="INFANTIL"> INFANTIL</div>
+                    <div class="form-check col-md-6"><input class="form-check-input" type="checkbox" name="cicle" value="PRIMER CICLE PRIMÀRIA"> PRIMER CICLE PRIMÀRIA</div>
+                    <div class="form-check col-md-6"><input class="form-check-input" type="checkbox" name="cicle" value="SEGON CICLE PRIMÀRIA"> SEGON CICLE PRIMÀRIA</div>
+                    <div class="form-check col-md-6"><input class="form-check-input" type="checkbox" name="cicle" value="TERCER CICLE PRIMÀRIA"> TERCER CICLE PRIMÀRIA</div>
+                    <div class="form-check col-md-6"><input class="form-check-input" type="checkbox" name="cicle" value="PRIMER CICLE ESO"> PRIMER CICLE ESO</div>
+                    <div class="form-check col-md-6"><input class="form-check-input" type="checkbox" name="cicle" value="SEGON CICLE ESO"> SEGON CICLE ESO</div>
+                    <div class="form-check col-md-6"><input class="form-check-input" type="checkbox" name="cicle" value="BATXILLERAT"> BATXILLERAT</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">En quin horari es realitzaria l’activitat?</label>
+                <input type="time" class="form-control" name="horari">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Data realitzar l’activitat</label>
+                <input type="date" class="form-control" name="data_principal">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">1a opció</label><input type="date" class="form-control" name="opcio1">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">2a opció</label><input type="date" class="form-control" name="opcio2">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">3a opció</label><input type="date" class="form-control" name="opcio3">
+            </div>
+            <div class="col-md-12">
+                <label class="form-label">Altres comentaris</label>
+                <textarea class="form-control" name="comentaris" rows="3"></textarea>
+            </div>
+        </div>
+
+        <h4 class="section-title">Informació Econòmica</h4>
+        <div class="row g-3">
+            <div class="col-md-12" id="bloque_ajudes_pv" style="display: none;">
+                <label class="form-label">L'activitat s'inclou en el programa d'ajudes a biblioteques? (SOLS PV) *</label>
+                <select class="form-select" name="ajudes_pv">
+                    <option value="SI">SÍ</option><option value="NO">NO</option>
+                </select>
+            </div>
+            <div class="col-md-12">
+                <label class="form-label">L’activitat està subvencionada?</label>
+                <select class="form-select" name="subvencionada">
+                    <option value="SÍ, Completament">SÍ, Completament</option>
+                    <option value="SÍ, una part">SÍ, una part</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Factura / proforma compra llibres</label>
+                <input type="text" class="form-control" name="factura_llibres">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Factura / proforma activitat</label>
+                <input type="text" class="form-control" name="factura_activitat">
+            </div>
+        </div>
+
+        <div class="d-grid gap-2 mt-5">
+            <button type="submit" class="btn btn-primary btn-lg">Enviar i Generar Informe</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function carregarTipus() {
+    const select = document.getElementById('comercial');
+    const zonaInput = document.getElementById('zona');
+    const selectedOption = select.options[select.selectedIndex];
+    
+    // Si es tria "Selecciona...", zona serà buit
+    const zona = selectedOption.value ? selectedOption.getAttribute('data-zona') : "";
+    zonaInput.value = zona;
+
+    const zonaNormalitzada = zona.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const bloquePV = document.getElementById('bloque_ajudes_pv');
+    
+    if (zona && (zonaNormalitzada.includes("VALENCIA") || zonaNormalitzada.includes("PV"))) {
+        bloquePV.style.display = "block";
+    } else {
+        bloquePV.style.display = "none";
+    }
+
+    const tipusSelect = document.getElementById('tipus');
+    const animacions = tipusSelect.options;
+    for (let i = 0; i < animacions.length; i++) {
+        const animZona = animacions[i].getAttribute('data-zona');
+        if (!zona || animZona === zona || !animZona) {
+            animacions[i].hidden = false;
+        } else {
+            animacions[i].hidden = true;
+        }
+    }
+}
+
+function carregarCentre() {
+    const select = document.getElementById('centre');
+    const selectedOption = select.options[select.selectedIndex];
+    // Neteja si es tria l'opció buida
+    document.getElementById('adreca').value = selectedOption.value ? selectedOption.getAttribute('data-adreca') : "";
+    document.getElementById('localitat').value = selectedOption.value ? selectedOption.getAttribute('data-localitat') : "";
+}
+
+function carregarLlibre() {
+    const select = document.getElementById('llibre');
+    const selectedOption = select.options[select.selectedIndex];
+    // Neteja si es tria l'opció buida
+    document.getElementById('autor').value = selectedOption.value ? selectedOption.getAttribute('data-autor') : "";
+    document.getElementById('correu_autor').value = selectedOption.value ? selectedOption.getAttribute('data-correu') : "";
+}
+</script>
+
+</body>
+</html>
