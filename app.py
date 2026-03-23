@@ -7,11 +7,11 @@ app = Flask(__name__)
 # Configuració dels arxius Excel
 # Nota: Si fas servir Volums a Railway, hauries d'afegir 'data/' davant del nom
 EXCEL_DATOS = "base_dades_formulari.xlsx"
+DIRECTORI_DADES = "app/data"
+if not os.path.exists(DIRECTORI_DADES):
+    os.makedirs(DIRECTORI_DADES)
 
-if not os.path.exists('/app/data'):
-    os.makedirs('/app/data')
-
-EXCEL_RESPOSTES = "/app/data/respostes_formulari.xlsx"
+EXCEL_RESPOSTES = os.path,join(DIRECTORI_DADES, "respostes_formulari.xlsx"
 
 def carregar_dades():
     # Carreguem cada full segons les teves especificacions
