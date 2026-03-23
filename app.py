@@ -11,7 +11,7 @@ DIRECTORI_DADES = "app/data"
 if not os.path.exists(DIRECTORI_DADES):
     os.makedirs(DIRECTORI_DADES)
 
-EXCEL_RESPOSTES = os.path,join(DIRECTORI_DADES, "respostes_formulari.xlsx"
+EXCEL_RESPOSTES = os.path.join(DIRECTORI_DADES, "respostes_formulari.xlsx"
 
 def carregar_dades():
     # Carreguem cada full segons les teves especificacions
